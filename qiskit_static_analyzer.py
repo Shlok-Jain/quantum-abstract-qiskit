@@ -98,11 +98,17 @@ class QuantumStaticAnalyzer:
         gate_qubits: Qubits the gate acts on (e.g. F)
         """
         F = tuple(sorted(gate_qubits))
+        F_set = set(F)
         new_state = {}
         
         for s_i in self.domain:
+            # Optimize: Only process subsets overlapping with the gate
+            if not set(s_i).intersection(F_set):
+                new_state[s_i] = self.state[s_i]
+                continue
+                
             # T_i = s_i U F (Target finer domain)
-            T_i = tuple(sorted(set(s_i).union(F)))
+            T_i = tuple(sorted(set(s_i).union(F_set)))
             
             # Find all subsets s_j that are completely covered by T_i
             # We expand all such s_j to T_i and intersect them later.
